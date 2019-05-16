@@ -1,0 +1,14 @@
+{
+  "name": "slm",
+  "version": "1.0.0",
+  "description": "Sign-bot that in no way I will abuse like Jimmy Saville with a crippling cocaine addiction.",
+  "main": "index.js",
+  "scripts": {
+    "test": "SLM_Test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.5.0"
+  }
+}
