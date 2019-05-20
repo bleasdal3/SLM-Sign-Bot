@@ -37,3 +37,4 @@ module.exports.Setup = function Setup(dbConnect)
   		});
 	});
 }
+

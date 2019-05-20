@@ -13,8 +13,7 @@ var dbConnect = mysql.createConnection({
 	password: 'Sequre21'
 });
 
-dbConnect.connect((err) => {
-  if (err) throw err;
+dbConnect.connect((err) => { 
   console.log('Connected to the database.');
   SetupDB.Setup(dbConnect);
 });
@@ -32,8 +31,15 @@ client.on('message', (receivedMessage) => {
     }
     
     var message = receivedMessage.content;
-    var response = MessageHandler.HandleMessage(message, dbConnect, client);
-    receivedMessage.channel.send(response);
+    var channel = receivedMessage.channel;
+    var response = "";
+    //var response = MessageHandler.HandleMessage(message, dbConnect, client);
+     response = MessageHandler.HandleMessage(message, dbConnect, client, channel);
+    
+    if((response != "") && (response != null))
+    {
+      receivedMessage.channel.send(response);
+    }
 
 })
 

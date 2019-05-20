@@ -1,5 +1,5 @@
-module.exports.HandleMessage = function HandleMessage(message, dbConnect, client)
-{
+module.exports.HandleMessage = function HandleMessage(message, dbConnect, client, channel)
+{	
 	//split params into array
 	var MessageArray = message.split(" ");
 	var result;
@@ -9,10 +9,11 @@ module.exports.HandleMessage = function HandleMessage(message, dbConnect, client
 	{
 		case "BobbleHat": //truncate table
 			Wipe(dbConnect);
+			result = "Table dropped.";
 			break;
 
 		case "Add":
-			result = CheckParams(MessageArray, dbConnect, client);
+			result = CheckParams(MessageArray, dbConnect, client, channel);
 			break;
 
 		default:
@@ -28,8 +29,7 @@ module.exports.HandleMessage = function HandleMessage(message, dbConnect, client
 
 }
 
-
-function CheckParams(MessageArray, dbConnect,client)
+function CheckParams(MessageArray, dbConnect,client, channel)
 {
 	var brokenCommand;
 
@@ -43,8 +43,7 @@ function CheckParams(MessageArray, dbConnect,client)
 					var _ID = MessageArray[1];
 					var _Rank = MessageArray[2];
 					var _NickName = MessageArray[3];
-
-				
+					var _query = "";			
 
 					var members = client.guilds.get('578526874230194196').members;		
 					var present = false;
@@ -56,33 +55,63 @@ function CheckParams(MessageArray, dbConnect,client)
 							present = true;
 						}						
 					}	
+					
 					if(present == false)
-					{
-						return "ERROR: User Id is not found in this server.";
+					{		
+						channel.send("ERROR: User Id is not found in this server.")									
+						return;
 					}
 
-					//for loop continues after this if found - I'm sure there is an easier way of doing this.
-					if(_Rank != ("Recruit" || "Raider" || "Officer"))
-					{
-						return "ERROR: Incorrect rank input. Must be: Recruit, Raider or Officer";
-					}
-					//no check for nickname, guess we'll have to assume they'll get it right.
-					//all good fort the DB query
+					//#######################################################
+						//check to see if already in the DB!
+					//#######################################################
+					_query = "select NickName from InitialTestTable where disc_id = '" + _ID + "'";
 
-					//var _query = "insert into `InitialTestTable` (`disc_id`, `NickName`, `GRank`) values ('" + _ID + "', '" + _NickName + "', '" + _Rank + "')";
-					var _query = "insert into `InitialTestTable` (`disc_id`, `NickName`, `GRank`) values ('_ID', '_NickName', '_Rank')";
-
-					dbConnect.query(_query, function(err, results)
-					{
-						if(err)
+					Promise_ReturnRows(_query, dbConnect)
+						.then(function(result)
 						{
-							console.log(err);
-							return "ERROR: Internal DB insert error. Check console.";
-						}
+							//code depending on result.
+							try
+							{
+								channel.send("ERROR: User already exists under the Nickname " + result[0].NickName + ".");
+								return;
+							}
+							catch(err) //type resolution failure. No results returned so evaluation of result[0].NickName fails
+							{
+								
+								if((_Rank != "Recruit") && (_Rank != "Raider") && (_Rank != "Officer"))
+								{
+									channel.send( "ERROR: Incorrect rank input. Must be: Recruit, Raider or Officer");
+									return;
+								}
+								//no check for nickname, guess we'll have to assume they'll get it right.
+								//all good for the DB query
 
-					});
+								_query = "insert into `InitialTestTable` (`disc_id`, `NickName`, `GRank`) values ('" + _ID + "', '" + _NickName + "', '" + _Rank + "')";
+								//_query = "insert into `InitialTestTable` (`disc_id`, `NickName`, `GRank`) values ('_ID', '_NickName', '_Rank')";
 
-					return "Success. " + _NickName + " (" +  _Rank +  ") has been added.";
+								dbConnect.query(_query, function(err, results)
+								{
+									if(err)
+									{
+										console.log(err);
+										channel.send("ERROR: Internal DB insert error. Check console.");
+										return;
+									}
+
+								console.log(_NickName);
+								channel.send("Success. " + _NickName + " (" +  _Rank +  ") has been added.");
+								return;						
+
+								});									
+
+							}
+						})
+						.catch(function()
+						{
+							channel.send("ERROR: ToDO put proper error reporting here.");
+							return;
+						});
 			}
 			else 
 			{
@@ -90,10 +119,26 @@ function CheckParams(MessageArray, dbConnect,client)
 			}
 		}
 		
-
 		default:
 			return; //kinda pointless with a mirrored switch, but hey ho.
 	}
+}
+
+function Promise_ReturnRows(query, dbConnect)
+{
+	
+	return new Promise(function(resolve, reject)
+	{
+		dbConnect.query(query, function(err, rows)
+			{
+				if(err)
+				{
+					return reject(err);
+				}
+				resolve(rows);
+			});
+	});
+
 }
 
 function Wipe(dbConnect)
@@ -104,8 +149,5 @@ function Wipe(dbConnect)
 			console.log(err);
 		else
 			console.log("Table truncated.");
-
 	});
 }
-
-
