@@ -80,5 +80,52 @@ module.exports.Add = function Add(MessageArray, dbConnect, client, channel)
 
 module.exports.Remove = function Remove(MessageArray, dbConnect, client, channel)
 {
-	
+	if(MessageArray.length == 2) //Kick -> NickName
+	{
+		//vars in this scope have "_" to prevent confusion with dependencies
+		var _NickName = MessageArray[1];
+		var _query = "";			
+		var members = client.guilds.get('578526874230194196').members;		
+		var present = false;
+
+		/*for(let[snowflake, guildmember] of members)
+		{
+			if(_ID == guildmember.user.id)
+			{
+				present = true;
+			}						
+		}	*/
+
+		/*if(present == false)
+		{		
+			channel.send("ERROR: User Id is not found in this server.")									
+			return;
+		}*/
+			_query = "delete from InitialTestTable where NickName = '" + _NickName + "' limit 1";
+
+			dbConnect.query(_query, function(err, results)
+						{			
+							if(err)
+							{
+								console.log(err);
+								channel.send("ERROR: Internal DB insert error. Check console. Or " + _NickName + "doesn't exist to be kicked!.");
+								return;
+							}
+
+							else if(results.affectedRows == 0)
+							{
+								channel.send("ERROR: " + _NickName + " was not found in the DB.");
+								return;
+							}
+							else
+							{
+								channel.send("Success. " + _NickName + " has been kicked.");
+								return;	
+							}								
+						});		
+		}
+		else 
+		{
+			return "ERROR: Incorrect number of arguments. The format is thus: Add ID Rank Name. For example: Add 1234567890 Recruit xXMargaret69ThatcherXx";
+		}
 }

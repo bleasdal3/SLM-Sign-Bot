@@ -20,8 +20,9 @@ module.exports.HandleMessage = function HandleMessage(message, dbConnect, client
 			result = User.Add(MessageArray, dbConnect, client, channel);  //is there a struct variant I can use instead of repeated params?
 			break;
 
-		case "Remove":
+		case "Kick":
 			result = User.Remove(MessageArray, dbConnect, client, channel);
+			break;
 
 		case "Promote":
 			result = Rank.Promote(MessageArray, dbConnect, client, channel);
