@@ -2,6 +2,7 @@ module.exports.HandleMessage = function HandleMessage(message, dbConnect, client
 {	
 	const AddUser = require('./AddUser');
 	const Wipe = require('./Wipe');
+	const Rank = require('./RankChange');
 
 	//split params into array
 	var MessageArray = message.split(" ");
@@ -19,14 +20,13 @@ module.exports.HandleMessage = function HandleMessage(message, dbConnect, client
 			result = AddUser.Add(MessageArray, dbConnect, client, channel);
 			break;
 
-		default:
-		result = "Invalid operation identifier. Please use the /? command for a list.";
-	}
+		case "Promote":
+			result = Rank.Promote(MessageArray, dbConnect, client, channel)
+			break;
 
-	//handle "add" command
-	//add must be X array length long and have valid types
-	//have independant Check params function function 
-	//CheckParams(add, [string]) -> switch on first param
+		default:
+			result = "Invalid operation identifier. Please use the /? command for a list.";
+	}
 
 	return result;
 

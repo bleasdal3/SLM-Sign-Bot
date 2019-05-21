@@ -1,6 +1,6 @@
 module.exports.Add = function Add(MessageArray, dbConnect, client, channel)
 {	
-	var brokenCommand;
+	const Promises = require('./Promises'); 
 
 	if(MessageArray.length == 4) //add -> ID -> Rank -> NickName
 	{
@@ -19,7 +19,7 @@ module.exports.Add = function Add(MessageArray, dbConnect, client, channel)
 				present = true;
 			}						
 		}	
-		
+
 		if(present == false)
 		{		
 			channel.send("ERROR: User Id is not found in this server.")									
@@ -29,7 +29,7 @@ module.exports.Add = function Add(MessageArray, dbConnect, client, channel)
 			//check to see if already in the DB!
 			_query = "select NickName from InitialTestTable where disc_id = '" + _ID + "'";
 
-			Promise_ReturnRows(_query, dbConnect)
+			Promises.QueryDB(_query, dbConnect)
 			.then(function(result)
 			{
 					//code depending on result.
@@ -40,7 +40,7 @@ module.exports.Add = function Add(MessageArray, dbConnect, client, channel)
 					}
 					catch(err) //type resolution failure. No results returned so evaluation of result[0].NickName fails
 					{
-						
+
 						if((_Rank != "Recruit") && (_Rank != "Raider") && (_Rank != "Officer"))
 						{
 							channel.send( "ERROR: Incorrect rank input. Must be: Recruit, Raider or Officer");
@@ -61,7 +61,6 @@ module.exports.Add = function Add(MessageArray, dbConnect, client, channel)
 								return;
 							}
 
-							console.log(_NickName);
 							channel.send("Success. " + _NickName + " (" +  _Rank +  ") has been added.");
 							return;					
 						});									
@@ -79,21 +78,4 @@ module.exports.Add = function Add(MessageArray, dbConnect, client, channel)
 		}
 	}
 
-
-
-	function Promise_ReturnRows(query, dbConnect)
-	{
-		return new Promise(function(resolve, reject)
-		{
-			dbConnect.query(query, function(err, rows)
-			{
-				if(err)
-				{
-					return reject(err);
-				}
-				resolve(rows);
-			});
-		});
-
-	}
 
