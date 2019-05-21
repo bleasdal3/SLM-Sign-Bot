@@ -3,6 +3,7 @@ const Discord = require('discord.js')
 const mysql = require('mysql')
 const MessageHandler = require('./MessageHandler');
 const SetupDB = require('./SetupDB');
+//const AddUser = require('./AddUser');
 const client = new Discord.Client()
 
 var bot_secret_token = "NTc4NTI3NTMyNjU2MzYxNDcy.XN1DkA.ICSeoN_23ZsWFm-iRdF9rhEVg-s";
