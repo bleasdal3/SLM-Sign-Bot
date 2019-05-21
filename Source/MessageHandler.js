@@ -1,8 +1,8 @@
 module.exports.HandleMessage = function HandleMessage(message, dbConnect, client, channel)
 {	
-	const AddUser = require('./AddUser');
+	const User = require('./User');
 	const Wipe = require('./Wipe');
-	const Rank = require('./RankChange');
+	const Rank = require('./Rank');
 
 	//split params into array
 	var MessageArray = message.split(" ");
@@ -17,8 +17,11 @@ module.exports.HandleMessage = function HandleMessage(message, dbConnect, client
 			break;
 
 		case "Add":
-			result = AddUser.Add(MessageArray, dbConnect, client, channel);
+			result = User.Add(MessageArray, dbConnect, client, channel);  //is there a struct variant I can use instead of repeated params?
 			break;
+
+		case "Remove":
+			result = User.Remove(MessageArray, dbConnect, client, channel);
 
 		case "Promote":
 			result = Rank.Promote(MessageArray, dbConnect, client, channel);
@@ -27,7 +30,7 @@ module.exports.HandleMessage = function HandleMessage(message, dbConnect, client
 		case "Demote":
 			result = Rank.Demote(MessageArray, dbConnect, client, channel);
 			break;
-			
+
 		default:
 			result = "Invalid operation identifier. Please use the /? command for a list.";
 	}

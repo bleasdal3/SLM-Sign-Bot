@@ -78,4 +78,7 @@ module.exports.Add = function Add(MessageArray, dbConnect, client, channel)
 		}
 	}
 
-
+module.exports.Remove = function Remove(MessageArray, dbConnect, client, channel)
+{
+	
+}
