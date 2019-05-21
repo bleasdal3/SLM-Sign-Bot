@@ -21,9 +21,13 @@ module.exports.HandleMessage = function HandleMessage(message, dbConnect, client
 			break;
 
 		case "Promote":
-			result = Rank.Promote(MessageArray, dbConnect, client, channel)
+			result = Rank.Promote(MessageArray, dbConnect, client, channel);
 			break;
 
+		case "Demote":
+			result = Rank.Demote(MessageArray, dbConnect, client, channel);
+			break;
+			
 		default:
 			result = "Invalid operation identifier. Please use the /? command for a list.";
 	}
