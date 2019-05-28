@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@jsbits/add-months": "^1.1.2",
     "discord.js": "^11.5.0",
     "google-spreadsheet": "^2.0.7",
     "googleapis": "^39.2.0",

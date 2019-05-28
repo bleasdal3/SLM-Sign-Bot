@@ -8,7 +8,7 @@ const readline = require('readline');
 const {google} = require('googleapis');
 const  GoogleSpreadsheet = require('google-spreadsheet');
 const credentials = require('./credentials.json');
-const moment = require("moment.js");
+
 
 const client = new Discord.Client();
 const fs = require('fs');
@@ -32,8 +32,10 @@ fs.readFile('credentials.json', (err, content) => {
 });
 
 var doc =  new GoogleSpreadsheet('19zU2Dz78yuttROuU0z54j2S2Fy2gG_gthiE5qrLqsYU');
+var sheet;
 
 GoogleAuth(credentials);
+
 
 /*##################################################
                   EVENTS
@@ -95,11 +97,29 @@ function GoogleAuth(credentials)
 {
   doc.useServiceAccountAuth(credentials, function(err)
   {
-    //testing
-    UpdateSheet.Shift();
-    
+    doc.getInfo(function(err, info)
+    {
+
+      console.log('Loaded doc: ' + info.title);
+      sheet = info.worksheets[0];
+      //do stuff!
+
+     sheet.getCells({'min-row': 1, 'max-row': 5, 'return-empty': true},function(err, cells) 
+   {
+    var cell = cells[0];
+        console.log('Cell R'+cell.row+'C'+cell.col+' = '+cell.value);
+        cell.value = "Abloogywoogywoo";
+        cell.save(function(err)
+        {
+            if(err)
+              throw err;
+        });
+      });
+    });
+    //UpdateSheet.Shift(sheet);   
   });
 }
+
 
 
 

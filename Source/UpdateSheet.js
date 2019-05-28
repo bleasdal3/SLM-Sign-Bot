@@ -1,54 +1,88 @@
-//this script details what happens when the google sheet needs to "roll-over". I.e. the event has finished and "2 months in the future" has just been offset by a day.
+//this script details what happens when the google sheet needs to "roll-over". I.e. the event has finished and "2 months in the future" has just been offset by a week on wednesday eve
 module.exports.Shift = function Shift()
 {	
-	//first, figure out what day of the week was yesterday 
-	//(because it's being run on morning after event days at 4am)
-	var eventDay = DayOfTheWeek();
+	//THIS IS RUN ON WEDNESDAY AT 11:30PM
 
-	switch(eventDay) //double check that 1 is monday and sunday is 7, it might be 0
-	{
-		case 1: //monday
-		{
-			break;
-		}
+	var Today = new Date();
+	var FutureDate = Today.addDays(62) //maximum days of two consecutive months, will trim to 8 weeks later.
 
-		case 3: //wednesday
-		{
-			break;
-		}
+	//first get arrays of dates for wednesday-sunday-monday
 
-		case 7: //sunday maybe
+	var WednesdayDates = getDaysBetweenDates(Today, FutureDate, 'Wed');
+	var SundayDates = getDaysBetweenDates(Today, FutureDate, 'Sun');
+	var MondayDates = getDaysBetweenDates(Today, FutureDate, 'Mon');
 
-		{
-			break;
-		}
+	var combinedLength = WednesdayDates.length + SundayDates.length + MondayDates.length;
+	console.log(WednesdayDates.length + " - Length.");
+	 
+	 //get them in order and trim the useless info
+	 var dates = [];
+	 var splitDate;
+	 var wednesdayCount = 0;
 
-		default: 
-		throw "Shouldn't have reached this point. TODO - Proper error checking.";
-	}
+	 for(var i = 0; i < combinedLength; i++)
+	 {
+	 	if(wednesdayCount == 8) //enforce 8 week max here. This prevents weird overflows with months with variable number of days
+	 	{
+	 		break;
+	 	}
+	 	try
+	 	{
+	 		var tempSplit = WednesdayDates[i].toString().split(' ');
+	 		//var tempSplit2 = tempSplit.split(' ');
+	 		splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];	 		
+	 		dates.push(splitDate);
 
+	 		if(tempSplit[0] == 'Wed')
+	 		{
+	 			wednesdayCount++;
+	 		}
+
+	 		tempSplit = SundayDates[i].toString().split(' ');
+	 		//var tempSplit2 = tempSplit.split(' ');
+	 		splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];
+	 		dates.push(splitDate);
+
+	 		tempSplit = MondayDates[i].toString().split(' ');
+	 		//var tempSplit2 = tempSplit.split(' ');
+	 		splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];
+	 		dates.push(splitDate);
+	 	}
+	 	catch(err)
+	 	{
+	 		break;
+	 	}
+	 }
+	 console.log(dates);
+	
 }
 
-function ReturnEventDays()
-{
-	//return all the date objects for the next 2 month period
-	var EventDays = "";
 
 
-	return EventDays;
+function getDaysBetweenDates(start, end, dayName) {
+ 
+  var result = [];
+  var days = {sun:0,mon:1,tue:2,wed:3,thu:4,fri:5,sat:6};
+  var day = days[dayName.toLowerCase().substr(0,3)];
+
+  // Copy start date
+  var current = new Date(start);
+
+  // Shift to next of required days
+  current.setDate(current.getDate() + (day - current.getDay() + 7) % 7);
+  // While less than end date, add dates to result array
+
+  while (current < end) {
+    //result.push(new Date(+current));
+     result.push(new Date(+current));
+    current.setDate(current.getDate() + 7);
+  }
+  return result;  
 }
 
-function DayOfTheWeek()
-{
-	var day = new Date();
-	var dayNumber = day.getDay();
-
-	if(dayNumber = 1)
-	{
-		return 7;
-	}
-	else
-	{
-		return dayNumber - 1;
-	}
+Date.prototype.addDays = function(days) {
+    var date = new Date(this.valueOf());
+    date.setDate(date.getDate() + days);
+    return date;
 }
+
