@@ -88,19 +88,6 @@ module.exports.Remove = function Remove(MessageArray, dbConnect, client, channel
 		var members = client.guilds.get('578526874230194196').members;		
 		var present = false;
 
-		/*for(let[snowflake, guildmember] of members)
-		{
-			if(_ID == guildmember.user.id)
-			{
-				present = true;
-			}						
-		}	*/
-
-		/*if(present == false)
-		{		
-			channel.send("ERROR: User Id is not found in this server.")									
-			return;
-		}*/
 			_query = "delete from InitialTestTable where NickName = '" + _NickName + "' limit 1";
 
 			dbConnect.query(_query, function(err, results)

@@ -1,8 +1,147 @@
-//this script details what happens when the google sheet needs to "roll-over". I.e. the event has finished and "2 months in the future" has just been offset by a week on wednesday eve
-module.exports.Shift = function Shift()
-{	
-	//THIS IS RUN ON WEDNESDAY AT 11:30PM
+module.exports.EditCell = function EditCell(messageArray, info, inputSwitch, senderID)
+{
+	var sheet = info.worksheets[0];
+	var result = "";
 
+	switch(inputSwitch)
+	{
+		case 'A': //signed
+		result = Sign(messageArray, sheet, senderID);		
+		break;
+
+		case 'N': //not signed
+		result = Unsign(nessageArray, sheet, senderID);
+		break; 
+
+		default: //no valid param
+		throw err;
+	}
+	return result;
+}
+
+function Sign(messageArray, sheet, senderID)
+{
+	if(messageArray.length == 4) //Sign -> Day -> Number -> Month
+	{
+		if((messageArray[1].length > 3) || (messageArray[3].length > 3))
+		{
+			return "ERROR: Invalid input. Please use this format: Sign Wed 04 Sep";
+		}
+
+		//get rows
+		sheet.getRows({limit: 35}, function(err, rows)
+		{
+			var signDate = ManipulateDateFormat(messageArray);
+
+			//search rows
+			for(var i = 0; i < rows.length; i++)
+			{
+				if(rows[i].id == senderID) //find ID in rows
+				{
+					var keyArray = Object.keys(rows[i]);
+					for(var x = 0; x < (Object.keys(rows[i])).length; x++) 
+					{	
+						if(keyArray[x] == signDate) //find date in row
+						{				;
+							var foundX = x; //the for loop keeps iterating as getCells is async.								
+							//set cell[i][x] to A
+							sheet.getCells({'min-row' : (i+2), //the indexes are wierd
+											'max-row' : (i+2), 
+											'return-empty' : true}
+											, function(err, cells)
+											{
+												var cell = cells[foundX - 3]; //x = 9 but col num is 6? and recorded as 7?
+												cell.value = 'A';
+												cell.save(function(err)
+												{													
+													return "Signed!";
+												});
+											});
+						}
+					}					
+				}
+			}
+		});
+
+	}
+	else
+	{
+		return "ERROR: Invalid Input. The accepted format is - [Sign] [Day of the Week] [Day Number] [Month]";
+	}
+
+}
+
+function Unsign(messageArray, sheet)
+{
+
+
+
+}
+
+function ManipulateDateFormat(messageArray)
+{
+	//strip first, change order and trim spaces of second
+	var returned = messageArray[1]+messageArray[2]+messageArray[3];
+	return returned;
+}
+
+module.exports.StartUp = function StartUp(info)
+{	
+	var userSheet = info.worksheets[1];
+	var statsSheet = info.worksheets[0];
+	//wipe spreadsheet, think about crash recovery at some point in the future
+	statsSheet.clear(function(err)
+	{
+		var dates = ['Name', 'Id','Rank'];	
+
+		//set column headers
+		statsSheet.setHeaderRow(dates, function(err)
+		{
+			console.log('Sheet reset for startup. Copying data from user sheet.');
+			userSheet.getRows(function(err, rows)			
+			{
+
+				for(var i = 0; i < rows.length; i++)
+				{			
+					statsSheet.addRow(
+					{
+      					worksheet_id:1,
+      					new_row:{
+       					Name: rows[i].name,
+      					ID: rows[i].id,
+      					Rank: rows[i].rank
+    				}
+    			},()=>
+    				{
+						//Add rest of the column headers
+						var temp = GetDateBlock();
+						for(var i = 0; i < temp.length; i++)
+						{
+							/*
+							Going to have to do some fiddling here because of the
+							the way the excel api formats the inputs. String, no space
+							and no symbols.
+							*/
+							dates.push(temp[i]);
+						}
+						
+					});
+				}
+				statsSheet.setHeaderRow(dates, function(err)
+				{
+					//think that's it?
+					if(err)
+					{
+						throw err;
+					}
+				});			
+			});
+		});
+	});	
+}
+
+function GetDateBlock()
+{
 	var Today = new Date();
 	var FutureDate = Today.addDays(62) //maximum days of two consecutive months, will trim to 8 weeks later.
 
@@ -13,7 +152,6 @@ module.exports.Shift = function Shift()
 	var MondayDates = getDaysBetweenDates(Today, FutureDate, 'Mon');
 
 	var combinedLength = WednesdayDates.length + SundayDates.length + MondayDates.length;
-	console.log(WednesdayDates.length + " - Length.");
 	 
 	 //get them in order and trim the useless info
 	 var dates = [];
@@ -29,8 +167,8 @@ module.exports.Shift = function Shift()
 	 	try
 	 	{
 	 		var tempSplit = WednesdayDates[i].toString().split(' ');
-	 		//var tempSplit2 = tempSplit.split(' ');
-	 		splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];	 		
+	 		//splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];
+	 		splitDate = tempSplit[0] +" " + tempSplit[2] + " " + tempSplit[1];	 		
 	 		dates.push(splitDate);
 
 	 		if(tempSplit[0] == 'Wed')
@@ -39,13 +177,13 @@ module.exports.Shift = function Shift()
 	 		}
 
 	 		tempSplit = SundayDates[i].toString().split(' ');
-	 		//var tempSplit2 = tempSplit.split(' ');
-	 		splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];
+	 		//splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];
+	 		splitDate = tempSplit[0] + " " + tempSplit[2] + " " + tempSplit[1];
 	 		dates.push(splitDate);
 
 	 		tempSplit = MondayDates[i].toString().split(' ');
-	 		//var tempSplit2 = tempSplit.split(' ');
-	 		splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];
+	 		//splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];
+	 		splitDate = tempSplit[0] + " " + tempSplit[2] + " " + tempSplit[1];
 	 		dates.push(splitDate);
 	 	}
 	 	catch(err)
@@ -53,11 +191,8 @@ module.exports.Shift = function Shift()
 	 		break;
 	 	}
 	 }
-	 console.log(dates);
-	
+	return dates;
 }
-
-
 
 function getDaysBetweenDates(start, end, dayName) {
  
@@ -85,4 +220,3 @@ Date.prototype.addDays = function(days) {
     date.setDate(date.getDate() + days);
     return date;
 }
-

@@ -9,7 +9,6 @@ const {google} = require('googleapis');
 const  GoogleSpreadsheet = require('google-spreadsheet');
 const credentials = require('./credentials.json');
 
-
 const client = new Discord.Client();
 const fs = require('fs');
 const TOKEN_PATH = 'token.json';
@@ -32,9 +31,8 @@ fs.readFile('credentials.json', (err, content) => {
 });
 
 var doc =  new GoogleSpreadsheet('19zU2Dz78yuttROuU0z54j2S2Fy2gG_gthiE5qrLqsYU');
-var sheet;
 
-GoogleAuth(credentials);
+InitialiseSheet(credentials);
 
 
 /*##################################################
@@ -47,22 +45,30 @@ client.on('ready', () => {
     generalChannel.send("Sign-Bot has joined the party.");
 });
 
-client.on('message', (receivedMessage) => {
-
-    if (receivedMessage.author == client.user) { //prevent replying to own messages
-        return
-    }
+client.on('message', (receivedMessage) => 
+{
+  if (receivedMessage.author == client.user) 
+  { //prevent replying to own messages      
+    return
+  }
     
-    var message = receivedMessage.content;
-    var channel = receivedMessage.channel;
-    var response = "";
-    response = MessageHandler.HandleMessage(message, dbConnect, client, channel);
-    
-    if((response != "") && (response != null))
-    {
-      receivedMessage.channel.send(response);
-    }
+  var message = receivedMessage.content;
+  var channel = receivedMessage.channel;
+  var response = "";
+  var senderID = receivedMessage.author.id;
 
+  doc.useServiceAccountAuth(credentials, function(err)
+  {
+    doc.getInfo(function(err, info)
+    {  
+      response = MessageHandler.HandleMessage(message, info, client, channel, senderID);
+    
+      if((response != "") && (response != null))
+      {
+        receivedMessage.channel.send(response);
+      }
+    });       
+  });
 });
 
 
@@ -93,30 +99,19 @@ function discordLogin(bot_secret)
 
 }
 
-function GoogleAuth(credentials)
+function InitialiseSheet(credentials)
 {
   doc.useServiceAccountAuth(credentials, function(err)
   {
     doc.getInfo(function(err, info)
     {
 
-      console.log('Loaded doc: ' + info.title);
-      sheet = info.worksheets[0];
-      //do stuff!
+      console.log('Loaded doc: ' + info.title);    
+      //UpdateSheet.StartUp(info); //TOCHECK -> turn this back on when necessary. its also not working
 
-     sheet.getCells({'min-row': 1, 'max-row': 5, 'return-empty': true},function(err, cells) 
-   {
-    var cell = cells[0];
-        console.log('Cell R'+cell.row+'C'+cell.col+' = '+cell.value);
-        cell.value = "Abloogywoogywoo";
-        cell.save(function(err)
-        {
-            if(err)
-              throw err;
-        });
-      });
+
     });
-    //UpdateSheet.Shift(sheet);   
+       
   });
 }
 
