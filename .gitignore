@@ -1,0 +1,12 @@
+# Module Folder #
+#################
+
+node_modules
+
+# Credentials #
+###############
+
+credentials.json
+ignoreTest.json
+
+
