@@ -25,28 +25,6 @@ module.exports.HandleMessage = function HandleMessage(message, info, client, cha
 		result = UpdateSheet.EditCell(messageArray, info, 'N', senderID, channel);
 		break;
 
-		/*case "BobbleHat": //truncate table
-			Wipe.Quickly(dbConnect);
-			result = "Table dropped.";
-			break;()*/
-
-		/*case "Add":
-			result = User.Add(MessageArray, client, channel);
-			break;*/
-
-		/*case "Kick":
-			result = User.Remove(MessageArray, dbConnect, client, channel);
-			break;*/
-
-		/*case "Promote":
-			result = Rank.Promote(MessageArray, dbConnect, client, channel);
-			break;*/
-
-		/*case "Demote":
-			result = Rank.Demote(MessageArray, dbConnect, client, channel);
-			break;*/
-
-
 		default:
 			result = "Invalid operation identifier. Please use the /? command for a list.";
 	}

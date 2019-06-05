@@ -33,8 +33,6 @@ function Sign(messageArray, sheet, senderID, channel)
 		{
 			var signDate = ManipulateDateFormat(messageArray);
 
-			
-
 			//search rows
 			for(var i = 0; i < rows.length; i++)
 			{
@@ -193,7 +191,6 @@ module.exports.StartUp = function StartUp(info)
 
 function GetDateBlock()
 {
-	console.log("###########");
 	var Today = new Date();
 	var FutureDate = Today.addDays(62) //maximum days of two consecutive months, will trim to 8 weeks later.
 
@@ -202,7 +199,6 @@ function GetDateBlock()
 	var WednesdayDates = getDaysBetweenDates(Today, FutureDate, 'Wed');
 	var SundayDates = getDaysBetweenDates(Today, FutureDate, 'Sun');
 	var MondayDates = getDaysBetweenDates(Today, FutureDate, 'Mon');
-
 	var combinedLength = WednesdayDates.length + SundayDates.length + MondayDates.length;
 	 
 	 //get them in order and trim the useless info
