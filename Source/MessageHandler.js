@@ -1,9 +1,7 @@
 module.exports.HandleMessage = function HandleMessage(message, info, client, channel, senderID)
 {	
-	//const User = require('./User');
-	//const Wipe = require('./Wipe');
-	//const Rank = require('./Rank');
 	const UpdateSheet = require('./UpdateSheet');
+	const Help = require('./Help');
 
 	//split params into array
 	var messageArray = message.split(" ");
@@ -23,6 +21,10 @@ module.exports.HandleMessage = function HandleMessage(message, info, client, cha
 
 		case "unsign":
 		result = UpdateSheet.EditCell(messageArray, info, 'N', senderID, channel);
+		break;
+
+		case "/?":
+		result = Help.Help(channel);
 		break;
 
 		default:

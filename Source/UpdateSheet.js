@@ -39,18 +39,21 @@ function Sign(messageArray, sheet, senderID, channel)
 		sheet.getRows({limit: 35}, function(err, rows)
 		{
 			var signDate = ManipulateDateFormat(messageArray);
+			var foundX = 0;
+			var foundI;
 
 			//search rows
 			for(var i = 0; i < rows.length; i++)
 			{
 				if(rows[i].id == senderID) //find ID in rows
 				{
+					foundI = i;
 					var keyArray = Object.keys(rows[i]);
 					for(var x = 0; x < (Object.keys(rows[i])).length; x++) 
 					{	
 						if(keyArray[x] == signDate) //find date in row
 						{				;
-							var foundX = x; //the for loop keeps iterating as getCells is async.								
+							foundX = x; //the for loop keeps iterating as getCells is async.								
 
 							sheet.getCells({'min-row' : (i+2), //the indexes are strange
 											'max-row' : (i+2), 
@@ -58,7 +61,7 @@ function Sign(messageArray, sheet, senderID, channel)
 											, function(err, cells)
 											{
 												var cell = cells[foundX - 3]; //x = 9 but col num is 6? and recorded as 7?
-												
+
 												if(cell.value.toLowerCase() == 'c')
 												{
 													channel.send("You are already confirmed for this event.");
@@ -71,11 +74,21 @@ function Sign(messageArray, sheet, senderID, channel)
 														channel.send("Signed!");
 													});
 												}
+
 											});
 						}
 					}					
 				}
+			}			
+			if(foundI == null)
+			{
+				channel.send("ERROR: Unable to find you in our roster.");
 			}
+			else if(foundX == null)
+			{
+				channel.send("ERROR: Date not found.");
+			}
+
 		});
 	}
 	else
