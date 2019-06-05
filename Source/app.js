@@ -109,7 +109,6 @@ function InitialiseSheet(credentials)
       console.log('Loaded doc: ' + info.title);    
       //UpdateSheet.StartUp(info); //TOCHECK -> turn this back on when necessary. its also not working
 
-
     });
        
   });

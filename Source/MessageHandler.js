@@ -8,17 +8,21 @@ module.exports.HandleMessage = function HandleMessage(message, info, client, cha
 	//split params into array
 	var messageArray = message.split(" ");
 	var result;
-	messageArray[0] = messageArray[0].toLowerCase();
 
+	for(var i = 0; i < messageArray.length; i++)
+	{
+		messageArray[i] = messageArray[i].toLowerCase();
+	}
+	
 	//detect command based on first word
 	switch(messageArray[0])
 	{
 		case "sign":		
-		result = UpdateSheet.EditCell(messageArray, info, 'A', senderID);
+		result = UpdateSheet.EditCell(messageArray, info, 'A', senderID, channel);
 		break;
 
 		case "unsign":
-		result = UpdateSheet.EditCell(messageArray, info, 'N', senderID);
+		result = UpdateSheet.EditCell(messageArray, info, 'N', senderID, channel);
 		break;
 
 		/*case "BobbleHat": //truncate table

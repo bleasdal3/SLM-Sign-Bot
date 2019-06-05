@@ -1,4 +1,4 @@
-module.exports.EditCell = function EditCell(messageArray, info, inputSwitch, senderID)
+module.exports.EditCell = function EditCell(messageArray, info, inputSwitch, senderID, channel)
 {
 	var sheet = info.worksheets[0];
 	var result = "";
@@ -6,11 +6,11 @@ module.exports.EditCell = function EditCell(messageArray, info, inputSwitch, sen
 	switch(inputSwitch)
 	{
 		case 'A': //signed
-		result = Sign(messageArray, sheet, senderID);		
+		result = Sign(messageArray, sheet, senderID, channel);		
 		break;
 
 		case 'N': //not signed
-		result = Unsign(nessageArray, sheet, senderID);
+		result = Unsign(messageArray, sheet, senderID, channel);
 		break; 
 
 		default: //no valid param
@@ -19,13 +19,72 @@ module.exports.EditCell = function EditCell(messageArray, info, inputSwitch, sen
 	return result;
 }
 
-function Sign(messageArray, sheet, senderID)
+function Sign(messageArray, sheet, senderID, channel)
 {
 	if(messageArray.length == 4) //Sign -> Day -> Number -> Month
 	{
 		if((messageArray[1].length > 3) || (messageArray[3].length > 3))
 		{
 			return "ERROR: Invalid input. Please use this format: Sign Wed 04 Sep";
+		}
+
+		//get rows
+		sheet.getRows({limit: 35}, function(err, rows)
+		{
+			var signDate = ManipulateDateFormat(messageArray);
+
+			
+
+			//search rows
+			for(var i = 0; i < rows.length; i++)
+			{
+				if(rows[i].id == senderID) //find ID in rows
+				{
+					var keyArray = Object.keys(rows[i]);
+					for(var x = 0; x < (Object.keys(rows[i])).length; x++) 
+					{	
+						if(keyArray[x] == signDate) //find date in row
+						{				;
+							var foundX = x; //the for loop keeps iterating as getCells is async.								
+
+							sheet.getCells({'min-row' : (i+2), //the indexes are strange
+											'max-row' : (i+2), 
+											'return-empty' : true}
+											, function(err, cells)
+											{
+												var cell = cells[foundX - 3]; //x = 9 but col num is 6? and recorded as 7?
+												cell.value = 'A';
+												cell.save(function(err)
+												{													
+													channel.send("Signed!");
+												});
+											});
+						}
+					}					
+				}
+			}
+		});
+
+	}
+	else
+	{
+		return "ERROR: Invalid Input. The accepted format is - [Sign] [Day of the Week] [Day Number] [Month]";
+	}
+
+}
+
+function CheckIfHistoric()
+{
+	return false;
+}
+
+function Unsign(messageArray, sheet, senderID, channel)
+{
+	if(messageArray.length == 4) //Unsign -> Day -> Number -> Month
+	{
+		if((messageArray[1].length > 3) || (messageArray[3].length > 3))
+		{
+			return "ERROR: Invalid input. Please use this format: Unsign Wed 04 Sep";
 		}
 
 		//get rows
@@ -44,17 +103,17 @@ function Sign(messageArray, sheet, senderID)
 						if(keyArray[x] == signDate) //find date in row
 						{				;
 							var foundX = x; //the for loop keeps iterating as getCells is async.								
-							//set cell[i][x] to A
-							sheet.getCells({'min-row' : (i+2), //the indexes are wierd
+
+							sheet.getCells({'min-row' : (i+2), //the indexes are strange
 											'max-row' : (i+2), 
 											'return-empty' : true}
 											, function(err, cells)
 											{
 												var cell = cells[foundX - 3]; //x = 9 but col num is 6? and recorded as 7?
-												cell.value = 'A';
+												cell.value = 'N';
 												cell.save(function(err)
 												{													
-													return "Signed!";
+													channel.send("Unsigned!");
 												});
 											});
 						}
@@ -66,16 +125,8 @@ function Sign(messageArray, sheet, senderID)
 	}
 	else
 	{
-		return "ERROR: Invalid Input. The accepted format is - [Sign] [Day of the Week] [Day Number] [Month]";
+		return "ERROR: Invalid Input. The accepted format is - [Unsign] [Day of the Week] [Day Number] [Month]";
 	}
-
-}
-
-function Unsign(messageArray, sheet)
-{
-
-
-
 }
 
 function ManipulateDateFormat(messageArray)
@@ -142,6 +193,7 @@ module.exports.StartUp = function StartUp(info)
 
 function GetDateBlock()
 {
+	console.log("###########");
 	var Today = new Date();
 	var FutureDate = Today.addDays(62) //maximum days of two consecutive months, will trim to 8 weeks later.
 
@@ -167,7 +219,6 @@ function GetDateBlock()
 	 	try
 	 	{
 	 		var tempSplit = WednesdayDates[i].toString().split(' ');
-	 		//splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];
 	 		splitDate = tempSplit[0] +" " + tempSplit[2] + " " + tempSplit[1];	 		
 	 		dates.push(splitDate);
 
@@ -177,12 +228,10 @@ function GetDateBlock()
 	 		}
 
 	 		tempSplit = SundayDates[i].toString().split(' ');
-	 		//splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];
 	 		splitDate = tempSplit[0] + " " + tempSplit[2] + " " + tempSplit[1];
 	 		dates.push(splitDate);
 
 	 		tempSplit = MondayDates[i].toString().split(' ');
-	 		//splitDate = [tempSplit[0], tempSplit[1], tempSplit[2]];
 	 		splitDate = tempSplit[0] + " " + tempSplit[2] + " " + tempSplit[1];
 	 		dates.push(splitDate);
 	 	}
