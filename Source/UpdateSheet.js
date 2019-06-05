@@ -28,6 +28,13 @@ function Sign(messageArray, sheet, senderID, channel)
 			return "ERROR: Invalid input. Please use this format: Sign Wed 04 Sep";
 		}
 
+		var concat = [messageArray[1], messageArray[2], messageArray[3]];
+
+		if(CheckIfHistoric(concat))
+		{
+			channel.send("ERROR: Cannot edit historic data.");
+			return;
+		}
 		//get rows
 		sheet.getRows({limit: 35}, function(err, rows)
 		{
@@ -51,29 +58,30 @@ function Sign(messageArray, sheet, senderID, channel)
 											, function(err, cells)
 											{
 												var cell = cells[foundX - 3]; //x = 9 but col num is 6? and recorded as 7?
-												cell.value = 'A';
-												cell.save(function(err)
-												{													
-													channel.send("Signed!");
-												});
+												
+												if(cell.value.toLowerCase() == 'c')
+												{
+													channel.send("You are already confirmed for this event.");
+												}
+												else
+												{
+													cell.value = 'A';
+													cell.save(function(err)
+													{													
+														channel.send("Signed!");
+													});
+												}
 											});
 						}
 					}					
 				}
 			}
 		});
-
 	}
 	else
 	{
 		return "ERROR: Invalid Input. The accepted format is - [Sign] [Day of the Week] [Day Number] [Month]";
 	}
-
-}
-
-function CheckIfHistoric()
-{
-	return false;
 }
 
 function Unsign(messageArray, sheet, senderID, channel)
@@ -83,6 +91,14 @@ function Unsign(messageArray, sheet, senderID, channel)
 		if((messageArray[1].length > 3) || (messageArray[3].length > 3))
 		{
 			return "ERROR: Invalid input. Please use this format: Unsign Wed 04 Sep";
+		}
+
+		var concat = [messageArray[1], messageArray[2], messageArray[3]];
+
+		if(CheckIfHistoric(concat))
+		{
+			channel.send("ERROR: Cannot edit historic data.");
+			return;
 		}
 
 		//get rows
@@ -119,12 +135,53 @@ function Unsign(messageArray, sheet, senderID, channel)
 				}
 			}
 		});
-
 	}
 	else
 	{
 		return "ERROR: Invalid Input. The accepted format is - [Unsign] [Day of the Week] [Day Number] [Month]";
 	}
+}
+
+function CheckIfHistoric(signDate)
+{
+	var today = (new Date().toString()).split(' ');
+	var monthsIndex = 
+	{
+    	'jan' : '01',
+   	 	'feb' : '02',
+    	'mar' : '03',
+    	'apr' : '04',
+    	'may' : '05',
+   	 	'jun' : '06',
+    	'jul' : '07',
+    	'aug' : '08',
+    	'sep' : '09',
+    	'oct' : '10',
+    	'nov' : '11',
+    	'dec' : '12'
+	}
+
+	var todayMonth = parseInt(monthsIndex[today[1].toLowerCase()]);
+	var signMonth =  parseInt(monthsIndex[signDate[2].toLowerCase()]);
+
+	//check month
+	if(todayMonth == signMonth)
+	{
+		var todayDay = parseInt(today[2]);
+		var signDay = parseInt(signDate[1]);
+
+		if(todayDay > signDay)
+		{			
+			return true;
+		}		
+	}
+
+	else if(todayMonth > signMonth)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 function ManipulateDateFormat(messageArray)
@@ -136,6 +193,7 @@ function ManipulateDateFormat(messageArray)
 
 module.exports.StartUp = function StartUp(info)
 {	
+
 	var userSheet = info.worksheets[1];
 	var statsSheet = info.worksheets[0];
 	//wipe spreadsheet, think about crash recovery at some point in the future
@@ -171,6 +229,7 @@ module.exports.StartUp = function StartUp(info)
 							the way the excel api formats the inputs. String, no space
 							and no symbols.
 							*/
+
 							dates.push(temp[i]);
 						}
 						
@@ -239,8 +298,8 @@ function GetDateBlock()
 	return dates;
 }
 
-function getDaysBetweenDates(start, end, dayName) {
- 
+function getDaysBetweenDates(start, end, dayName) 
+{ 
   var result = [];
   var days = {sun:0,mon:1,tue:2,wed:3,thu:4,fri:5,sat:6};
   var day = days[dayName.toLowerCase().substr(0,3)];

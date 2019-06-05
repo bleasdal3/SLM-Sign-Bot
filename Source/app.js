@@ -1,8 +1,6 @@
 
 const Discord = require('discord.js');
-const mysql = require('mysql');
 const MessageHandler = require('./MessageHandler');
-const SetupDB = require('./SetupDB');
 const UpdateSheet = require('./UpdateSheet');
 const readline = require('readline');
 const {google} = require('googleapis');
@@ -86,17 +84,6 @@ function discordLogin(bot_secret)
   {
     console.log('Error logging the bot into discord: ', err);
   }
-  var dbConnect = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Sequre21'
-  });
-
-  dbConnect.connect((err) => { 
-  console.log('Connected to the database.');
-  SetupDB.Setup(dbConnect);
-  });
-
 }
 
 function InitialiseSheet(credentials)
@@ -107,7 +94,7 @@ function InitialiseSheet(credentials)
     {
 
       console.log('Loaded doc: ' + info.title);    
-      //UpdateSheet.StartUp(info); //TOCHECK -> turn this back on when necessary. its also not working
+      //UpdateSheet.StartUp(info); //TOCHECK -> turn this on if necessary. its also not working
 
     });
        

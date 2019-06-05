@@ -28,9 +28,6 @@ module.exports.HandleMessage = function HandleMessage(message, info, client, cha
 		default:
 			result = "Invalid operation identifier. Please use the /? command for a list.";
 	}
-
 	return result;
-
-
 }
 
