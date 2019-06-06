@@ -16,22 +16,22 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
                   SCRIPT EXECUTION
 ###################################################*/
 
+var doc;
+var creds; // not too sure about callback assignment scopes so just going to leave these out here...
+
 fs.readFile('credentials.json', (err, content) => {
 
   if(err)
   {
     return console.log('Error loading client secret file:', err);
   }
-  var creds = JSON.parse(content);
+  creds = JSON.parse(content);
 
   discordLogin(creds.bot_secret);
+  doc =  new GoogleSpreadsheet(creds.sheetId);
+  InitialiseSheet(credentials);
 
 });
-
-var doc =  new GoogleSpreadsheet('19zU2Dz78yuttROuU0z54j2S2Fy2gG_gthiE5qrLqsYU');
-
-InitialiseSheet(credentials);
-
 
 /*##################################################
                   EVENTS
@@ -39,7 +39,7 @@ InitialiseSheet(credentials);
 
 
 client.on('ready', () => {
-    var generalChannel = client.channels.get("578526874230194198"); //general channel. Replace with bot speak
+    var generalChannel = client.channels.get(creds.GeneralChannel); //general channel. Replace with bot speak
     generalChannel.send("Sign-Bot has joined the party.");
 });
 

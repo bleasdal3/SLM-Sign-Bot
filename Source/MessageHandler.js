@@ -27,9 +27,28 @@ module.exports.HandleMessage = function HandleMessage(message, info, client, cha
 		result = Help.Help(channel);
 		break;
 
+		case "!sheet":
+		result = ParseSheetURL(channel);		
+		break;
+
 		default:
 			result = "Invalid operation identifier. Please use the /? command for a list.";
 	}
 	return result;
+}
+
+function ParseSheetURL(channel)
+{
+	const fs = require('fs');
+	fs.readFile('credentials.json', (err, content) => 
+	{
+  		if(err)
+  		{
+    		return console.log('Error loading client secret file:', err);
+  		}
+  		var creds = JSON.parse(content);
+  		channel.send(creds.sheet);
+  		return creds.sheet;
+  	});
 }
 
