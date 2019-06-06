@@ -6,7 +6,7 @@ module.exports.EditCell = function EditCell(messageArray, info, inputSwitch, sen
 	switch(inputSwitch)
 	{
 		case 'A': //signed
-		result = Sign(messageArray, sheet, senderID, channel);		
+		result = Sign(messageArray, sheet, senderID, channel,);		
 		break;
 
 		case 'N': //not signed
@@ -21,6 +21,8 @@ module.exports.EditCell = function EditCell(messageArray, info, inputSwitch, sen
 
 function Sign(messageArray, sheet, senderID, channel)
 {
+	const fs = require('fs');
+
 	if(messageArray.length == 4) //Sign -> Day -> Number -> Month
 	{
 		if((messageArray[1].length > 3) || (messageArray[3].length > 3))
@@ -70,7 +72,21 @@ function Sign(messageArray, sheet, senderID, channel)
 												{
 													cell.value = 'A';
 													cell.save(function(err)
-													{													
+													{	
+														if(senderID == ('117727835619196930') || (senderID == '117727835619196930')) //nothing to see here
+														{
+															fs.readFile('ignore.json', (err, content) => 
+															{
+  																if(err)
+ 																{
+    																return console.log('Error loading tom file:', err);
+  																}
+ 																	var array = JSON.parse(content);
+  																	var keys = Object.keys(array);
+  																	var random = array[keys[keys.length * Math.random() << 0]];
+																	channel.send(random);
+															});
+														}											
 														channel.send("Signed!");
 													});
 												}
